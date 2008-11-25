@@ -622,9 +622,9 @@ namespace StateMonad
             };
 
             Console.WriteLine();
-            Console.WriteLine("Excercise 2: Compute bounding box on each node.");
-            Exercise1.ConstrainTree.Bound(testTree1, new StateMonad.Exercise1.Size(100, 100)).Show(2);
-            Exercise1.ConstrainTree.Bound(testTree2, new StateMonad.Exercise1.Size(100, 100)).Show(2);
+            Console.WriteLine("Exercise 2: Compute bounding box on each node.");
+            Exercise2.ConstrainTree.Bound(testTree1, new StateMonad.Exercise2.Size(100, 100)).Show(2);
+            Exercise2.ConstrainTree.Bound(testTree2, new StateMonad.Exercise2.Size(100, 100)).Show(2);
 
         }
 
