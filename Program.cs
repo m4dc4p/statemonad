@@ -533,7 +533,7 @@ namespace StateMonad
         static void Main(string[] args)
         {
             Console.WriteLine("Unlabeled Tree:");
-            var t = new Br<string>
+            var testTree1 = new Br<string>
             {
                 left = new Lf<string> { contents = "a" },
                 right = new Br<string>
@@ -546,7 +546,7 @@ namespace StateMonad
                     right = new Lf<string> { contents = "d" }
                 },
             };
-            t.Show(2);
+            testTree1.Show(2);
 
             Console.WriteLine();
             Console.WriteLine("Hand-Labeled Tree:");
@@ -595,16 +595,36 @@ namespace StateMonad
 
             Console.WriteLine();
             Console.WriteLine("Non-monadically Labeled Tree:");
-            var t2 = Label<string>(t);
+            var t2 = Label<string>(testTree1);
             t2.Show(2);
 
             Console.WriteLine();
             Console.WriteLine("Monadically Labeled Tree:");
-            var t3 = MLabel<string>(t);
+            var t3 = MLabel<string>(testTree1);
             t3.Show(2);
+
+            var testTree2 = new Br<string>
+            {
+                left = new Lf<string> { contents = "a" },
+                right = new Br<string>
+                {
+                    left = new Br<string>
+                    {
+                        left = new Lf<string> { contents = "b" },
+                        right = new Br<string>
+                        {
+                            left = new Lf<string> { contents = "e" },
+                            right = new Lf<string> { contents = "f" }
+                        },
+                    },
+                    right = new Lf<string> { contents = "d" }
+                },
+            };
 
             Console.WriteLine();
             Console.WriteLine("Excercise 2: Compute bounding box on each node.");
+            Exercise1.ConstrainTree.Bound(testTree1, new StateMonad.Exercise1.Size(100, 100)).Show(2);
+            Exercise1.ConstrainTree.Bound(testTree2, new StateMonad.Exercise1.Size(100, 100)).Show(2);
 
         }
 

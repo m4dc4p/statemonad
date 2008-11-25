@@ -106,23 +106,6 @@ namespace StateMonad
             }
         }
 
-        public class Rect
-        {
-            public Rect(Point upperLeft, Point lowerRight)
-            {
-                UpperLeft = upperLeft;
-                LowerRight = lowerRight;
-            }
-
-            public Point UpperLeft { get; private set; }
-            public Point LowerRight { get; private set; }
-
-            public override string ToString()
-            {
-                return "((" + UpperLeft.ToString() + "), (" + LowerRight.ToString() + "))";
-            }
-        }
-
         /// <summary>
         /// Given root a tree and a container size, find the rectangles for each
         /// node in the tree such that all nodes will fit in the container. Only leafs
@@ -131,46 +114,61 @@ namespace StateMonad
         /// </summary>
         public class ConstrainTree
         {
-            public static SM<Size, Rect> UpdateState()
+            public delegate SM<Size, Size> Updater();
+
+            public static SM<Size, Size> RightUpdateState()
             {
-                return new SM<Size, Rect>
+                return new SM<Size, Size>
                 {
-                    s2scp = (size => new Scp<Size, Rect>
+                    s2scp = (size => new Scp<Size, Size>
                     {
-                        label = new Size(size.Width / 2, size.Height / 2),
-                        lcpContents = new Rect(new Point(0, 0), new Point(size.Width, size.Height)) }) 
-                    };
+                        label = new Size(size.Width * 2, size.Height * 2),
+                        lcpContents = size
+                    })
+                };
             }
 
-            public static SM<Size, Program.Tr<Scp<Size, Rect>>> Mk<A>(Program.Tr<A> start)
+            public static SM<Size, Size> LeftUpdateState()
             {
-                if (start is Program.Lf<A>)
+                return new SM<Size, Size>
                 {
-                    var leaf = (Program.Lf<A>)start;
-                    return SM<Size, Program.Tr<Scp<Size, Rect>>>.bind<Scp<Size, Rect>>
-                        (UpdateState(),
-                        ((contents1) =>
-                            SM<Size, Program.Tr<Scp<Size, Rect>>>.@return(
-                            new Program.Lf<Scp<Size, Rect>>
+                    s2scp = (size => new Scp<Size, Size>
+                    {
+                        label = new Size(size.Width / 2, size.Height / 2),
+                        lcpContents = new Size(size.Width / 2, size.Height / 2)
+                    })
+                };
+            }
+
+            public static SM<Size, Program.Tr<Scp<Size, Size>>> Mk<A>(Program.Tr<A> tree, Updater update)
+            {
+                if (tree is Program.Lf<A>)
+                {
+                    var leaf = (Program.Lf<A>)tree;
+                    return SM<Size, Size>.bind<Program.Tr<Scp<Size, Size>>>(update(),
+                        (contents1 =>
+                            SM<Size, Program.Tr<Scp<Size, Size>>>.@return(
+                            new Program.Lf<Scp<Size, Size>>
                             {
-                                contents = new Scp<Size, Rect>
+                                contents = new Scp<Size, Size>
                                     {
-                                        label = new Size(0, 0),
+                                        label = contents1,
                                         lcpContents = contents1
                                     }
                             })));
                 }
                 else
                 {
-                    var branch = (Program.Br<A>)start;
+                    var branch = (Program.Br<A>)tree;
                     var left = branch.left;
                     var right = branch.right;
 
-                    return SM<Size, Program.Tr<Scp<Size, Rect>>>.bind(
-                        Mk<Size, Program.Tr<A>>(left),
-                        (newLeft => SM<Size, Program.Tr<Scp<Size, Rect>>>.bind<Size, Rect, Rect>(
-                            (newRight => SM<MaxBBox, Program.Tr<Scp<Size, rect>>>.@return(
-                                new Program.Br<Scp<Size, Rect>> {
+                    return SM<Size, Program.Tr<Scp<Size, Size>>>.bind<Program.Tr<Scp<Size, Size>>>(
+                        Mk<A>(left, new Updater(LeftUpdateState)),
+                        (newLeft => SM<Size, Program.Tr<Scp<Size, Size>>>.bind<Program.Tr<Scp<Size, Size>>>(
+                            Mk<A>(right, new Updater(RightUpdateState)),
+                            (newRight => SM<Size, Program.Tr<Scp<Size, Size>>>.@return(
+                                new Program.Br<Scp<Size, Size>> {
                                     left = newLeft,
                                     right = newRight }
                                 ))
@@ -186,9 +184,9 @@ namespace StateMonad
             /// <typeparam name="Contents1"></typeparam>
             /// <param name="tree"></param>
             /// <returns></returns>
-            public static Program.Tr<Scp<Size, Rect>> Bound<A>(Program.Tr<A> tree, Size containerSize)
+            public static Program.Tr<Scp<Size, Size>> Bound<A>(Program.Tr<A> tree, Size containerSize)
             {
-                return Mk<Size, A>(tree).s2scp(containerSize).lcpContents;
+                return Mk<A>(tree, new Updater(LeftUpdateState)).s2scp(containerSize).lcpContents;
             }
         }
 
