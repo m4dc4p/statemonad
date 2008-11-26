@@ -626,6 +626,12 @@ namespace StateMonad
             Exercise2.ConstrainTree.Bound(testTree1, new StateMonad.Exercise2.Size(100, 100)).Show(2);
             Exercise2.ConstrainTree.Bound(testTree2, new StateMonad.Exercise2.Size(100, 100)).Show(2);
 
+            Console.WriteLine();
+            Console.WriteLine("Excercise 3: Constrained tree using abstract class.");
+            Exercise3.ConstrainTree.Bound(testTree1, new StateMonad.Exercise3.Size(100, 100)).Show(2);
+            Exercise3.ConstrainTree.Bound(testTree2, new StateMonad.Exercise3.Size(100, 100)).Show(2);
+
+
         }
 
         // Exercise 1: generalize over the type of the state, from int
